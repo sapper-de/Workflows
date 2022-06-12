@@ -1,0 +1,29 @@
+name: build and push NuGet Package to GitHub
+
+on:
+  workflow_call:
+    inputs:
+      dotnet-version:
+        required: false
+        type: string
+    secrets:
+      token:
+        required: true        
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore --configuration Release 
+    - name: Push Package
+      run: dotnet nuget push "**/*.nupkg" --source https://nuget.pkg.github.com/sapper-de/index.json --skip-duplicate --api-key ${{ secrets.token }} 
